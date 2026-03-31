@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Runner - Editor de Código Dark</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --bg-quaternary: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #888888;
+            --accent: #4a6cf7;
+            --accent-hover: #3a5ce4;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --border: #404040;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #d4d4d4;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .logo i { color: var(--accent); font-size: 1.5rem; }
+
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74,108,247,0.3);
+        }
+
+        .btn.primary { background: var(--accent); border-color: var(--accent); }
+        .btn.primary:hover { background: var(--accent-hover); }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        /* Editor */
+        .editor-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 55vh;
+        }
+
+        .editor-header {
+            background: var(--bg-tertiary);
+            padding: 10px 16px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 7px 14px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .tab.active {
+            background: var(--bg-primary);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .editor-body {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            padding: 16px 10px 16px 14px;
+            color: var(--text-tertiary);
+            text-align: right;
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            line-height: 1.65;
+            background: #161616;
+            border-right: 1px solid var(--border);
+            min-width: 48px;
+            overflow: hidden;
+            white-space: pre;
+        }
+
+        .code-editor {
+            flex: 1;
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            padding: 16px;
+            border: none;
+            resize: none;
+            font-size: 13px;
+            line-height: 1.65;
+            outline: none;
+            tab-size: 2;
+            overflow-y: auto;
+        }
+
+        .code-editor:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+
+        /* Preview */
+        .preview-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 32vh;
+        }
+
+        .preview-header {
+            background: var(--bg-tertiary);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preview-title { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+
+        #previewStatus { font-size: 0.82rem; color: var(--text-tertiary); }
+
+        .preview-frame { flex: 1; background: white; border: none; }
+
+        /* Terminal */
+        .terminal-section {
+            background: var(--terminal-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 22vh;
+        }
+
+        .terminal-header {
+            background: var(--bg-tertiary);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-title { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+
+        .terminal-body {
+            flex: 1;
+            padding: 12px 15px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .terminal-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+        }
+
+        .terminal-prompt { color: var(--accent); font-weight: 500; white-space: nowrap; }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--terminal-text);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .terminal-line { margin: 3px 0; line-height: 1.5; }
+        .terminal-output { color: var(--terminal-text); }
+        .terminal-error { color: var(--error); }
+        .terminal-success { color: var(--success); }
+        .terminal-warning { color: var(--warning); }
+        .terminal-cmd { color: var(--accent); }
+
+        /* Status bar */
+        .status-bar {
+            background: var(--bg-tertiary);
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text-tertiary);
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .status-item { display: flex; align-items: center; gap: 6px; }
+
+        .status-indicator {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 14px 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(420px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--accent);
+            max-width: 320px;
+        }
+
+        .notification.show { transform: translateX(0); }
+        .notification.error { border-left-color: var(--error); }
+        .notification.success { border-left-color: var(--success); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease; }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 10px; gap: 10px; }
+            .editor-section { height: 45vh; }
+            .preview-section { height: 35vh; }
+            .terminal-section { height: 28vh; }
+            .header { flex-direction: column; gap: 10px; padding: 10px; }
+            .header-actions { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-code"></i>
+            <span>Code Runner</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn primary" onclick="runCode()">
+                <i class="fas fa-play"></i> Executar
+            </button>
+            <button class="btn" onclick="clearAll()">
+                <i class="fas fa-trash"></i> Limpar
+            </button>
+            <button class="btn" onclick="loadExample()">
+                <i class="fas fa-file-code"></i> Exemplo
+            </button>
+            <button class="btn" onclick="openInNewTab()">
+                <i class="fas fa-external-link-alt"></i> Nova Aba
+            </button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Editor -->
+        <div class="editor-section fade-in">
+            <div class="editor-header">
+                <button class="tab active" onclick="switchTab('html', this)">
+                    <i class="fas fa-file-code"></i> HTML
+                </button>
+                <button class="tab" onclick="switchTab('css', this)">
+                    <i class="fas fa-paint-brush"></i> CSS
+                </button>
+                <button class="tab" onclick="switchTab('js', this)">
+                    <i class="fas fa-js"></i> JavaScript
+                </button>
+                <button class="tab" onclick="switchTab('py', this)">
+                    <i class="fab fa-python"></i> Python
+                </button>
+            </div>
+            <div class="editor-body">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea id="htmlCode" class="code-editor" placeholder="Digite seu código HTML aqui..." spellcheck="false"></textarea>
+                <textarea id="cssCode" class="code-editor" placeholder="Digite seu código CSS aqui..." style="display:none;" spellcheck="false"></textarea>
+                <textarea id="jsCode" class="code-editor" placeholder="Digite seu código JavaScript aqui..." style="display:none;" spellcheck="false"></textarea>
+                <textarea id="pyCode" class="code-editor" placeholder="Digite seu código Python aqui..." style="display:none;" spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-section fade-in">
+            <div class="preview-header">
+                <div class="preview-title">
+                    <i class="fas fa-eye"></i>
+                    <span>Preview</span>
+                </div>
+                <span id="previewStatus">Pronto</span>
+            </div>
+            <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+
+        <!-- Terminal -->
+        <div class="terminal-section fade-in">
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    <i class="fas fa-terminal"></i>
+                    <span>Terminal</span>
+                </div>
+                <span style="font-size:0.82rem;color:var(--text-tertiary)">v1.0.0 · digite <b>help</b></span>
+            </div>
+            <div class="terminal-body" id="terminalOutput">
+                <div class="terminal-line terminal-output">
+                    <span class="terminal-prompt">user@coderunner:~$</span>
+                    &nbsp;Code Runner Terminal v1.0.0 — digite <span style="color:var(--accent)">help</span> para ver os comandos
+                </div>
+            </div>
+            <div class="terminal-input-container">
+                <span class="terminal-prompt">user@coderunner:~$</span>
+                <input type="text" class="terminal-input" id="terminalInput" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-indicator"></div>
+            <span>Online</span>
+        </div>
+        <div class="status-item">HTML: <span id="htmlLength">0</span> chars</div>
+        <div class="status-item">CSS: <span id="cssLength">0</span> chars</div>
+        <div class="status-item">JS: <span id="jsLength">0</span> chars</div>
+        <div class="status-item">Python: <span id="pyLength">0</span> chars</div>
+        <div class="status-item">Linha: <span id="cursorLine">1</span> · Col: <span id="cursorCol">1</span></div>
+    </div>
+</div>
+
+<div class="notification" id="notification">
+    <i class="fas fa-check-circle" id="notificationIcon"></i>
+    <span id="notificationText">Código executado com sucesso!</span>
+</div>
+
+<script>
+    let currentTab = 'html';
+    let notifTimeout = null;
+
+    const editors = {
+        html: document.getElementById('htmlCode'),
+        css:  document.getElementById('cssCode'),
+        js:   document.getElementById('jsCode'),
+        py:   document.getElementById('pyCode'),
+    };
+
+    const previewFrame   = document.getElementById('previewFrame');
+    const terminalOutput = document.getElementById('terminalOutput');
+    const terminalInput  = document.getElementById('terminalInput');
+    const lineNumbers    = document.getElementById('lineNumbers');
+    const notification   = document.getElementById('notification');
+
+    // ── Line numbers ────────────────────────────────────────────────────────
+    function updateLineNumbers() {
+        const editor = editors[currentTab];
+        const count  = editor.value.split('\n').length;
+        lineNumbers.textContent = Array.from({length: count}, (_, i) => i + 1).join('\n');
+        // sync scroll
+        lineNumbers.scrollTop = editor.scrollTop;
+    }
+
+    // ── Cursor position ─────────────────────────────────────────────────────
+    function updateCursor(editor) {
+        const text = editor.value.substring(0, editor.selectionStart);
+        const lines = text.split('\n');
+        document.getElementById('cursorLine').textContent = lines.length;
+        document.getElementById('cursorCol').textContent  = lines[lines.length - 1].length + 1;
+    }
+
+    // ── Tab key inserts spaces ───────────────────────────────────────────────
+    function handleTabKey(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const ta    = e.target;
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+            ta.selectionStart = ta.selectionEnd = start + 2;
+            updateLineNumbers();
+        }
+    }
+
+    // ── Switch tab ──────────────────────────────────────────────────────────
+    function switchTab(tab, btn) {
+        currentTab = tab;
+
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        Object.values(editors).forEach(e => e.style.display = 'none');
+        editors[tab].style.display = 'block';
+        editors[tab].focus();
+
+        updateLineNumbers();
+        updateCharCount();
+    }
+
+    // ── Run code ────────────────────────────────────────────────────────────
+    function runCode() {
+        const html = editors.html.value;
+        const css  = editors.css.value;
+        const js   = editors.js.value;
+
+        try {
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`);
+            doc.close();
+
+            document.getElementById('previewStatus').textContent = 'Executado ✓';
+            updateCharCount();
+            showNotification('Código executado com sucesso!', 'success');
+            terminalLog('Código executado com sucesso.', 'success');
+        } catch (err) {
+            document.getElementById('previewStatus').textContent = 'Erro!';
+            showNotification('Erro: ' + err.message, 'error');
+            terminalLog('Erro na execução: ' + err.message, 'error');
+        }
+    }
+
+    // ── Clear ───────────────────────────────────────────────────────────────
+    function clearAll() {
+        Object.values(editors).forEach(e => e.value = '');
+        const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+        doc.open(); doc.write(''); doc.close();
+        document.getElementById('previewStatus').textContent = 'Pronto';
+        updateLineNumbers();
+        updateCharCount();
+        showNotification('Editores limpos.', 'success');
+        terminalLog('Editores limpos.', 'warning');
+    }
+
+    // ── Load example ────────────────────────────────────────────────────────
+    function loadExample() {
+        editors.html.value =
+`<h1>Olá, Code Runner! 🚀</h1>
+<p>Este é um exemplo interativo.</p>
+<button onclick="mudarCor()">Mudar cor</button>
+<div id="caixa" style="width:100px;height:100px;background:#4a6cf7;margin-top:16px;border-radius:8px;transition:background .4s"></div>`;
+
+        editors.css.value =
+`body {
+  font-family: sans-serif;
+  padding: 24px;
+  background: #f0f4ff;
+}
+h1 { color: #4a6cf7; }
+button {
+  padding: 8px 18px;
+  background: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}`;
+
+        editors.js.value =
+`function mudarCor() {
+  const cores = ['#f44336','#4caf50','#ff9800','#9c27b0','#4a6cf7'];
+  const caixa = document.getElementById('caixa');
+  caixa.style.background = cores[Math.floor(Math.random() * cores.length)];
+}`;
+
+        editors.py.value = '# Python roda no terminal abaixo (simulado)\nprint("Olá do Python!")';
+
+        // switch para HTML e executa
+        const htmlBtn = document.querySelector('.tab');
+        switchTab('html', htmlBtn);
+        runCode();
+        showNotification('Exemplo carregado!', 'success');
+    }
+
+    // ── Open in new tab ─────────────────────────────────────────────────────
+    function openInNewTab() {
+        const html = editors.html.value;
+        const css  = editors.css.value;
+        const js   = editors.js.value;
+
+        const content = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+        const blob = new Blob([content], { type: 'text/html' });
+        const url  = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        showNotification('Aberto em nova aba!', 'success');
+    }
+
+    // ── Char count ──────────────────────────────────────────────────────────
+    function updateCharCount() {
+        document.getElementById('htmlLength').textContent = editors.html.value.length;
+        document.getElementById('cssLength').textContent  = editors.css.value.length;
+        document.getElementById('jsLength').textContent   = editors.js.value.length;
+        document.getElementById('pyLength').textContent   = editors.py.value.length;
+    }
+
+    // ── Notification ────────────────────────────────────────────────────────
+    function showNotification(msg, type = 'success') {
+        const icon = document.getElementById('notificationIcon');
+        notification.className = 'notification ' + type;
+        icon.className = type === 'error' ? 'fas fa-times-circle' : 'fas fa-check-circle';
+        document.getElementById('notificationText').textContent = msg;
+        notification.classList.add('show');
+        clearTimeout(notifTimeout);
+        notifTimeout = setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+
+    // ── Terminal log helper ──────────────────────────────────────────────────
+    function terminalLog(msg, cls = 'output') {
+        const line = document.createElement('div');
+        line.className = 'terminal-line terminal-' + cls;
+        line.textContent = msg;
+        terminalOutput.appendChild(line);
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    // ── Terminal commands ────────────────────────────────────────────────────
+    const COMMANDS = {
+        help() {
+            const cmds = [
+                'help          — lista os comandos',
+                'run           — executa o código (HTML/CSS/JS)',
+                'clear         — limpa o terminal',
+                'clearall      — limpa os editores',
+                'example       — carrega o exemplo',
+                'tab html|css|js|py — muda a aba',
+                'chars         — mostra contagem de caracteres',
+                'echo <texto>  — imprime texto',
+                'version       — versão do app',
+            ];
+            cmds.forEach(c => terminalLog(c, 'output'));
+        },
+        run()     { runCode(); },
+        clear()   {
+            terminalOutput.innerHTML = '';
+            terminalLog('Terminal limpo.', 'success');
+        },
+        clearall(){ clearAll(); },
+        example() { loadExample(); },
+        chars()   {
+            terminalLog(`HTML: ${editors.html.value.length} | CSS: ${editors.css.value.length} | JS: ${editors.js.value.length} | Python: ${editors.py.value.length}`, 'output');
+        },
+        version() { terminalLog('Code Runner v1.0.0', 'success'); },
+        tab(args) {
+            const t = args[0];
+            if (!editors[t]) { terminalLog(`Aba inválida: ${t}. Use html, css, js ou py.`, 'error'); return; }
+            const btn = [...document.querySelectorAll('.tab')].find(b => b.textContent.trim().toLowerCase().startsWith(t));
+            if (btn) switchTab(t, btn);
+            terminalLog(`Aba: ${t}`, 'success');
+        },
+        echo(args) { terminalLog(args.join(' '), 'output'); },
+    };
+
+    terminalInput.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        const raw   = terminalInput.value.trim();
+        terminalInput.value = '';
+        if (!raw) return;
+
+        // echo command
+        const cmdLine = document.createElement('div');
+        cmdLine.className = 'terminal-line terminal-cmd';
+        cmdLine.innerHTML = `<span class="terminal-prompt">user@coderunner:~$</span> ${escapeHtml(raw)}`;
+        terminalOutput.appendChild(cmdLine);
+
+        const parts = raw.split(/\s+/);
+        const cmd   = parts[0].toLowerCase();
+        const args  = parts.slice(1);
+
+        // Python simulation
+        if (currentTab === 'py' && raw === 'run') {
+            simulatePython(editors.py.value);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            return;
+        }
+
+        if (COMMANDS[cmd]) {
+            COMMANDS[cmd](args);
+        } else {
+            terminalLog(`Comando não encontrado: ${cmd}. Digite help.`, 'error');
+        }
+
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    });
+
+    // ── Python simulation (basic) ────────────────────────────────────────────
+    function simulatePython(code) {
+        const lines = code.split('\n');
+        const output = [];
+        const vars   = {};
+
+        for (const raw of lines) {
+            const line = raw.trim();
+            if (!line || line.startsWith('#')) continue;
+
+            // print(...)
+            const printMatch = line.match(/^print\((.+)\)$/);
+            if (printMatch) {
+                try {
+                    const inner = printMatch[1].trim();
+                    // string literal
+                    const strMatch = inner.match(/^["'](.*)["']$/);
+                    if (strMatch) { output.push(strMatch[1]); continue; }
+                    // f-string basic
+                    const fMatch = inner.match(/^f["'](.*)["']$/);
+                    if (fMatch) {
+                        let s = fMatch[1].replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? v);
+                        output.push(s); continue;
+                    }
+                    // variable
+                    if (vars[inner] !== undefined) { output.push(String(vars[inner])); continue; }
+                    // expression
+                    output.push(String(eval(inner)));
+                } catch { output.push('[erro ao avaliar]'); }
+                continue;
+            }
+
+            // var = value
+            const assignMatch = line.match(/^(\w+)\s*=\s*(.+)$/);
+            if (assignMatch) {
+                const [, name, val] = assignMatch;
+                try { vars[name] = eval(val.replace(/\b([a-zA-Z_]\w*)\b/g, v => vars[v] !== undefined ? vars[v] : v)); }
+                catch { vars[name] = val.replace(/^["']|["']$/g, ''); }
+                continue;
+            }
+        }
+
+        if (output.length) {
+            output.forEach(l => terminalLog(l, 'success'));
+        } else {
+            terminalLog('(sem saída)', 'warning');
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function escapeHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Wire up editors ──────────────────────────────────────────────────────
+    Object.entries(editors).forEach(([key, el]) => {
+        el.addEventListener('input', () => {
+            if (key === currentTab) updateLineNumbers();
+            updateCharCount();
+        });
+        el.addEventListener('scroll', () => {
+            if (key === currentTab) lineNumbers.scrollTop = el.scrollTop;
+        });
+        el.addEventListener('keydown', handleTabKey);
+        el.addEventListener('keyup',   e => updateCursor(e.target));
+        el.addEventListener('click',   e => updateCursor(e.target));
+    });
+
+    // Init
+    updateLineNumbers();
+    updateCharCount();
+</script>
+</body>
+</html>
