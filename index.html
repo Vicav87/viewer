@@ -3,34 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Runner - Editor de Código Dark</title>
+    <title>Code Runner Pro - Editor de Código</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0f0f0f;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #252525;
-            --bg-quaternary: #333333;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-tertiary: #888888;
-            --accent: #4a6cf7;
-            --accent-hover: #3a5ce4;
-            --success: #4caf50;
-            --warning: #ff9800;
-            --error: #f44336;
-            --border: #404040;
-            --terminal-bg: #1e1e1e;
-            --terminal-text: #d4d4d4;
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131a;
+            --bg-tertiary: #1a1a24;
+            --bg-quaternary: #252536;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --text-tertiary: #686880;
+            --accent: #6c5ce7;
+            --accent-hover: #5a4bd1;
+            --accent-light: #a29bfe;
+            --success: #00cec9;
+            --warning: #fdcb6e;
+            --error: #ff7675;
+            --border: #2d2d40;
+            --terminal-bg: #0d0d14;
+            --terminal-text: #c8c8d0;
+            --glass: rgba(20,20,36,0.8);
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --radius: 14px;
+            --radius-sm: 10px;
         }
 
         body {
-            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 50%, rgba(108,92,231,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,206,201,0.06) 0%, transparent 50%);
             overflow-x: hidden;
         }
 
@@ -41,106 +49,204 @@
             flex-direction: column;
         }
 
+        /* Header */
         .header {
-            background: var(--bg-secondary);
-            padding: 15px 20px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 14px 24px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
-        .logo i { color: var(--accent); font-size: 1.5rem; }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
 
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
         .btn {
             background: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 9px 15px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: all 0.2s ease;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
         }
 
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            opacity: 0;
+            transition: opacity 0.25s;
+            border-radius: inherit;
+            z-index: 0;
+        }
+
+        .btn:hover::before { opacity: 0.12; }
         .btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
+            border-color: var(--accent-light);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(74,108,247,0.3);
+            box-shadow: 0 6px 20px rgba(108,92,231,0.25);
+        }
+        .btn:active { transform: translateY(0); }
+        .btn > * { position: relative; z-index: 1; }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--accent), #5a4bd1);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(108,92,231,0.4);
+        }
+        .btn.primary:hover {
+            background: linear-gradient(135deg, #7c6cf0, #6a5be0);
+            box-shadow: 0 6px 25px rgba(108,92,231,0.5);
         }
 
-        .btn.primary { background: var(--accent); border-color: var(--accent); }
-        .btn.primary:hover { background: var(--accent-hover); }
+        .btn.ghost {
+            background: transparent;
+            border-color: transparent;
+        }
+        .btn.ghost:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border);
+        }
 
+        .btn .badge {
+            background: var(--accent-light);
+            color: #1a1a24;
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        /* Main layout */
         .main-content {
             flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 16px;
+            padding: 20px;
+            max-height: calc(100vh - 150px);
+        }
+
+        .editor-section {
+            grid-row: 1 / 3;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
             gap: 16px;
         }
 
-        /* Editor */
-        .editor-section {
+        .preview-section {
+            flex: 1;
             background: var(--bg-secondary);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            overflow: hidden;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            height: 55vh;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            min-height: 280px;
         }
 
+        .terminal-section {
+            background: var(--terminal-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            height: 220px;
+        }
+
+        /* Editor header */
         .editor-header {
             background: var(--bg-tertiary);
-            padding: 10px 16px;
+            padding: 8px 12px;
             display: flex;
-            gap: 6px;
+            gap: 4px;
             border-bottom: 1px solid var(--border);
             flex-wrap: wrap;
         }
 
         .tab {
-            padding: 7px 14px;
+            padding: 8px 16px;
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-tertiary);
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 7px;
-            font-size: 0.85rem;
-            font-family: inherit;
+            font-size: 0.83rem;
+            font-weight: 500;
         }
 
         .tab.active {
             background: var(--bg-primary);
-            color: var(--accent);
+            color: var(--accent-light);
             border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(108,92,231,0.2);
         }
-
         .tab:hover:not(.active) {
-            background: var(--bg-primary);
+            background: var(--bg-quaternary);
             color: var(--text-primary);
         }
+        .tab i { font-size: 0.9rem; }
 
         .editor-body {
             flex: 1;
@@ -150,18 +256,19 @@
         }
 
         .line-numbers {
-            padding: 16px 10px 16px 14px;
+            padding: 14px 8px 14px 14px;
             color: var(--text-tertiary);
             text-align: right;
             user-select: none;
             pointer-events: none;
-            font-size: 13px;
+            font-size: 12.5px;
             line-height: 1.65;
-            background: #161616;
+            background: #0d0d14;
             border-right: 1px solid var(--border);
-            min-width: 48px;
+            min-width: 44px;
             overflow: hidden;
             white-space: pre;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
         }
 
         .code-editor {
@@ -169,7 +276,7 @@
             background: var(--terminal-bg);
             color: var(--terminal-text);
             font-family: 'JetBrains Mono', 'Consolas', monospace;
-            padding: 16px;
+            padding: 14px 16px;
             border: none;
             resize: none;
             font-size: 13px;
@@ -177,22 +284,14 @@
             outline: none;
             tab-size: 2;
             overflow-y: auto;
+            transition: box-shadow 0.3s;
         }
-
-        .code-editor:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+        .code-editor:focus {
+            box-shadow: inset 0 0 0 2px var(--accent);
+        }
 
         /* Preview */
-        .preview-section {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 32vh;
-        }
-
-        .preview-header {
+        .preview-header, .terminal-header {
             background: var(--bg-tertiary);
             padding: 10px 16px;
             display: flex;
@@ -200,43 +299,40 @@
             align-items: center;
             border-bottom: 1px solid var(--border);
         }
+        .preview-title, .terminal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
 
-        .preview-title { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        #previewStatus {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--bg-quaternary);
+            color: var(--text-secondary);
+            transition: 0.3s;
+        }
+        #previewStatus.success { background: rgba(0,206,201,0.15); color: var(--success); }
+        #previewStatus.error { background: rgba(255,118,117,0.15); color: var(--error); }
 
-        #previewStatus { font-size: 0.82rem; color: var(--text-tertiary); }
-
-        .preview-frame { flex: 1; background: white; border: none; }
+        .preview-frame {
+            flex: 1;
+            background: white;
+            border: none;
+        }
 
         /* Terminal */
-        .terminal-section {
-            background: var(--terminal-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 22vh;
-        }
-
-        .terminal-header {
-            background: var(--bg-tertiary);
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .terminal-title { display: flex; align-items: center; gap: 10px; font-weight: 500; }
-
         .terminal-body {
             flex: 1;
             padding: 12px 15px;
             overflow-y: auto;
-            font-size: 13px;
+            font-size: 12.5px;
             line-height: 1.55;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
         }
-
         .terminal-input-container {
             display: flex;
             align-items: center;
@@ -245,25 +341,123 @@
             background: var(--bg-tertiary);
             border-top: 1px solid var(--border);
         }
-
-        .terminal-prompt { color: var(--accent); font-weight: 500; white-space: nowrap; }
-
+        .terminal-prompt { color: var(--accent-light); font-weight: 600; white-space: nowrap; }
         .terminal-input {
             flex: 1;
             background: transparent;
             border: none;
             color: var(--terminal-text);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12.5px;
             outline: none;
         }
-
-        .terminal-line { margin: 3px 0; line-height: 1.5; }
+        .terminal-line { margin: 2px 0; line-height: 1.5; }
         .terminal-output { color: var(--terminal-text); }
         .terminal-error { color: var(--error); }
         .terminal-success { color: var(--success); }
         .terminal-warning { color: var(--warning); }
-        .terminal-cmd { color: var(--accent); }
+        .terminal-cmd { color: var(--accent-light); }
+
+        /* History panel */
+        .history-panel {
+            position: fixed;
+            right: -420px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            box-shadow: -8px 0 30px rgba(0,0,0,0.5);
+            z-index: 200;
+            transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+            display: flex;
+            flex-direction: column;
+        }
+        .history-panel.open { right: 0; }
+        .history-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s;
+        }
+        .history-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .history-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            color: var(--accent-light);
+        }
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .history-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .history-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-quaternary);
+            transform: translateX(-3px);
+        }
+        .history-item .version-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        .history-item .timestamp {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-bottom: 4px;
+        }
+        .history-item .preview-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .history-item .actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .history-item .actions .btn {
+            padding: 5px 10px;
+            font-size: 0.73rem;
+        }
+        .history-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-tertiary);
+        }
+        .history-empty i { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
 
         /* Status bar */
         .status-bar {
@@ -272,86 +466,104 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             color: var(--text-tertiary);
             border-top: 1px solid var(--border);
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
-
-        .status-item { display: flex; align-items: center; gap: 6px; }
-
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
         .status-indicator {
             width: 8px; height: 8px;
             border-radius: 50%;
             background: var(--success);
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--success); }
+            50% { opacity: 0.4; box-shadow: 0 0 2px var(--success); }
         }
 
-        /* Notification */
-        .notification {
+        /* Toast */
+        .toast {
             position: fixed;
-            bottom: 20px; right: 20px;
-            background: var(--bg-tertiary);
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-secondary);
             color: var(--text-primary);
-            padding: 14px 18px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             gap: 12px;
-            transform: translateX(420px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
+            transform: translateX(450px);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            z-index: 300;
             border-left: 4px solid var(--accent);
-            max-width: 320px;
+            max-width: 360px;
         }
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-left-color: var(--error); }
+        .toast.success { border-left-color: var(--success); }
 
-        .notification.show { transform: translateX(0); }
-        .notification.error { border-left-color: var(--error); }
-        .notification.success { border-left-color: var(--success); }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .fade-in { animation: fadeSlideIn 0.45s ease; }
 
-        .fade-in { animation: fadeIn 0.4s ease; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-quaternary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
 
-        @media (max-width: 768px) {
-            .main-content { padding: 10px; gap: 10px; }
-            .editor-section { height: 45vh; }
-            .preview-section { height: 35vh; }
-            .terminal-section { height: 28vh; }
-            .header { flex-direction: column; gap: 10px; padding: 10px; }
-            .header-actions { width: 100%; justify-content: center; }
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                max-height: none;
+            }
+            .editor-section { grid-row: auto; height: 45vh; }
+            .preview-section { min-height: 40vh; }
+            .terminal-section { height: 200px; }
+            .header { padding: 10px 14px; }
+            .btn { padding: 7px 11px; font-size: 0.8rem; }
+            .history-panel { width: 100%; right: -100%; }
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- Header -->
     <header class="header">
         <div class="logo">
-            <i class="fas fa-code"></i>
-            <span>Code Runner</span>
+            <div class="logo-icon"><i class="fas fa-code"></i></div>
+            <span>Code Runner <span style="font-weight:400;color:var(--accent-light)">Pro</span></span>
         </div>
         <div class="header-actions">
             <button class="btn primary" onclick="runCode()">
                 <i class="fas fa-play"></i> Executar
             </button>
+            <button class="btn" onclick="saveToHistory()" title="Salvar versão atual">
+                <i class="fas fa-save"></i> Salvar <span class="badge" id="historyCount">0</span>
+            </button>
+            <button class="btn ghost" onclick="toggleHistory()" title="Histórico de versões">
+                <i class="fas fa-history"></i> Histórico
+            </button>
             <button class="btn" onclick="clearAll()">
-                <i class="fas fa-trash"></i> Limpar
+                <i class="fas fa-eraser"></i> Limpar
             </button>
             <button class="btn" onclick="loadExample()">
-                <i class="fas fa-file-code"></i> Exemplo
+                <i class="fas fa-lightbulb"></i> Exemplo
             </button>
             <button class="btn" onclick="openInNewTab()">
-                <i class="fas fa-external-link-alt"></i> Nova Aba
+                <i class="fas fa-external-link-alt"></i>
             </button>
         </div>
     </header>
@@ -361,82 +573,107 @@
         <div class="editor-section fade-in">
             <div class="editor-header">
                 <button class="tab active" onclick="switchTab('html', this)">
-                    <i class="fas fa-file-code"></i> HTML
+                    <i class="fab fa-html5" style="color:#e44d26"></i> HTML
                 </button>
                 <button class="tab" onclick="switchTab('css', this)">
-                    <i class="fas fa-paint-brush"></i> CSS
+                    <i class="fab fa-css3-alt" style="color:#264de4"></i> CSS
                 </button>
                 <button class="tab" onclick="switchTab('js', this)">
-                    <i class="fas fa-js"></i> JavaScript
+                    <i class="fab fa-js" style="color:#f7df1e"></i> JavaScript
                 </button>
                 <button class="tab" onclick="switchTab('py', this)">
-                    <i class="fab fa-python"></i> Python
+                    <i class="fab fa-python" style="color:#3776ab"></i> Python
                 </button>
             </div>
             <div class="editor-body">
                 <div class="line-numbers" id="lineNumbers">1</div>
-                <textarea id="htmlCode" class="code-editor" placeholder="Digite seu código HTML aqui..." spellcheck="false"></textarea>
-                <textarea id="cssCode" class="code-editor" placeholder="Digite seu código CSS aqui..." style="display:none;" spellcheck="false"></textarea>
-                <textarea id="jsCode" class="code-editor" placeholder="Digite seu código JavaScript aqui..." style="display:none;" spellcheck="false"></textarea>
-                <textarea id="pyCode" class="code-editor" placeholder="Digite seu código Python aqui..." style="display:none;" spellcheck="false"></textarea>
+                <textarea id="htmlCode" class="code-editor" placeholder="<!-- HTML -->" spellcheck="false"></textarea>
+                <textarea id="cssCode" class="code-editor" placeholder="/* CSS */" style="display:none;" spellcheck="false"></textarea>
+                <textarea id="jsCode" class="code-editor" placeholder="// JavaScript" style="display:none;" spellcheck="false"></textarea>
+                <textarea id="pyCode" class="code-editor" placeholder="# Python" style="display:none;" spellcheck="false"></textarea>
             </div>
         </div>
 
-        <!-- Preview -->
-        <div class="preview-section fade-in">
-            <div class="preview-header">
-                <div class="preview-title">
-                    <i class="fas fa-eye"></i>
-                    <span>Preview</span>
+        <!-- Right panel -->
+        <div class="right-panel">
+            <!-- Preview -->
+            <div class="preview-section fade-in">
+                <div class="preview-header">
+                    <div class="preview-title">
+                        <i class="fas fa-eye" style="color:var(--accent-light)"></i>
+                        <span>Preview ao vivo</span>
+                    </div>
+                    <span id="previewStatus">Pronto</span>
                 </div>
-                <span id="previewStatus">Pronto</span>
+                <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
             </div>
-            <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
-        </div>
 
-        <!-- Terminal -->
-        <div class="terminal-section fade-in">
-            <div class="terminal-header">
-                <div class="terminal-title">
-                    <i class="fas fa-terminal"></i>
-                    <span>Terminal</span>
+            <!-- Terminal -->
+            <div class="terminal-section fade-in">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        <i class="fas fa-terminal" style="color:var(--success)"></i>
+                        <span>Terminal</span>
+                    </div>
+                    <span style="font-size:0.78rem;color:var(--text-tertiary)">digite <b style="color:var(--accent-light)">help</b></span>
                 </div>
-                <span style="font-size:0.82rem;color:var(--text-tertiary)">v1.0.0 · digite <b>help</b></span>
-            </div>
-            <div class="terminal-body" id="terminalOutput">
-                <div class="terminal-line terminal-output">
-                    <span class="terminal-prompt">user@coderunner:~$</span>
-                    &nbsp;Code Runner Terminal v1.0.0 — digite <span style="color:var(--accent)">help</span> para ver os comandos
+                <div class="terminal-body" id="terminalOutput">
+                    <div class="terminal-line terminal-output">
+                        <span class="terminal-prompt">coderunner:~$</span>
+                        &nbsp;Bem-vindo ao Code Runner Pro — histórico de versões ativo
+                    </div>
                 </div>
-            </div>
-            <div class="terminal-input-container">
-                <span class="terminal-prompt">user@coderunner:~$</span>
-                <input type="text" class="terminal-input" id="terminalInput" placeholder="Digite um comando..." autocomplete="off" spellcheck="false">
+                <div class="terminal-input-container">
+                    <span class="terminal-prompt">coderunner:~$</span>
+                    <input type="text" class="terminal-input" id="terminalInput" placeholder="Comando..." autocomplete="off" spellcheck="false">
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Status bar -->
     <div class="status-bar">
-        <div class="status-item">
-            <div class="status-indicator"></div>
-            <span>Online</span>
-        </div>
-        <div class="status-item">HTML: <span id="htmlLength">0</span> chars</div>
-        <div class="status-item">CSS: <span id="cssLength">0</span> chars</div>
-        <div class="status-item">JS: <span id="jsLength">0</span> chars</div>
-        <div class="status-item">Python: <span id="pyLength">0</span> chars</div>
-        <div class="status-item">Linha: <span id="cursorLine">1</span> · Col: <span id="cursorCol">1</span></div>
+        <div class="status-item"><div class="status-indicator"></div><span>Online</span></div>
+        <div class="status-item">HTML <span id="htmlLength">0</span></div>
+        <div class="status-item">CSS <span id="cssLength">0</span></div>
+        <div class="status-item">JS <span id="jsLength">0</span></div>
+        <div class="status-item">Python <span id="pyLength">0</span></div>
+        <div class="status-item">Ln <span id="cursorLine">1</span> · Col <span id="cursorCol">1</span></div>
+        <div class="status-item"><i class="fas fa-save"></i> <span id="lastSaved">Nunca</span></div>
     </div>
 </div>
 
-<div class="notification" id="notification">
-    <i class="fas fa-check-circle" id="notificationIcon"></i>
-    <span id="notificationText">Código executado com sucesso!</span>
+<!-- History overlay -->
+<div class="history-overlay" id="historyOverlay" onclick="toggleHistory()"></div>
+
+<!-- History panel -->
+<div class="history-panel" id="historyPanel">
+    <div class="history-header">
+        <h3><i class="fas fa-history"></i> Histórico de versões</h3>
+        <button class="btn ghost" onclick="toggleHistory()" style="padding:6px 10px;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="history-list" id="historyList">
+        <div class="history-empty">
+            <i class="fas fa-archive"></i>
+            <p>Nenhuma versão salva ainda</p>
+            <p style="font-size:0.8rem">Clique em <b>Salvar</b> para guardar o estado atual</p>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle" id="toastIcon"></i>
+    <span id="toastText">Sucesso!</span>
 </div>
 
 <script>
+    // ── State ──────────────────────────────────────────────────────────────
     let currentTab = 'html';
-    let notifTimeout = null;
+    let toastTimeout = null;
+    const STORAGE_KEY = 'coderunner_history';
 
     const editors = {
         html: document.getElementById('htmlCode'),
@@ -449,18 +686,150 @@
     const terminalOutput = document.getElementById('terminalOutput');
     const terminalInput  = document.getElementById('terminalInput');
     const lineNumbers    = document.getElementById('lineNumbers');
-    const notification   = document.getElementById('notification');
+    const toast          = document.getElementById('toast');
 
-    // ── Line numbers ────────────────────────────────────────────────────────
+    // ── History management ─────────────────────────────────────────────────
+    function getHistory() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+    }
+
+    function saveHistory(versions) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(versions));
+        updateHistoryBadge();
+        renderHistoryList();
+    }
+
+    function saveToHistory() {
+        const versions = getHistory();
+        const snapshot = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleString('pt-BR'),
+            html: editors.html.value,
+            css: editors.css.value,
+            js: editors.js.value,
+            py: editors.py.value,
+            preview: editors.html.value.substring(0, 80) || '(código vazio)',
+        };
+
+        versions.unshift(snapshot); // mais recente no topo
+
+        // Limitar a 50 versões
+        if (versions.length > 50) versions.length = 50;
+
+        saveHistory(versions);
+        document.getElementById('lastSaved').textContent = new Date().toLocaleTimeString('pt-BR');
+        showToast('Versão salva com sucesso!', 'success');
+        terminalLog(`📦 Versão salva (${snapshot.timestamp})`, 'success');
+    }
+
+    function loadVersion(id) {
+        const versions = getHistory();
+        const version = versions.find(v => v.id === id);
+        if (!version) return;
+
+        editors.html.value = version.html;
+        editors.css.value  = version.css;
+        editors.js.value   = version.js;
+        editors.py.value   = version.py;
+
+        const htmlBtn = document.querySelector('.tab');
+        switchTab('html', htmlBtn);
+        updateLineNumbers();
+        updateCharCount();
+        runCode();
+        toggleHistory(); // fecha painel
+        showToast('Versão carregada!', 'success');
+        terminalLog(`📂 Versão carregada (${version.timestamp})`, 'success');
+        document.getElementById('lastSaved').textContent = '(carregado)';
+    }
+
+    function deleteVersion(id) {
+        let versions = getHistory();
+        versions = versions.filter(v => v.id !== id);
+        saveHistory(versions);
+        showToast('Versão removida', 'warning');
+        terminalLog('🗑️ Versão removida do histórico', 'warning');
+    }
+
+    function renderHistoryList() {
+        const versions = getHistory();
+        const container = document.getElementById('historyList');
+
+        if (versions.length === 0) {
+            container.innerHTML = `
+            <div class="history-empty">
+              <i class="fas fa-archive"></i>
+              <p>Nenhuma versão salva ainda</p>
+              <p style="font-size:0.8rem">Clique em <b>Salvar</b> para guardar o estado atual</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = versions.map((v, i) => `
+          <div class="history-item fade-in" style="animation-delay:${i * 0.03}s">
+            <div class="version-badge">v${versions.length - i}</div>
+            <div class="timestamp"><i class="far fa-clock"></i> ${v.timestamp}</div>
+            <div class="preview-text">${escapeHtml(v.preview)}</div>
+            <div class="actions">
+              <button class="btn primary" onclick="loadVersion(${v.id})" style="padding:5px 10px;font-size:0.73rem;">
+                <i class="fas fa-download"></i> Carregar
+              </button>
+              <button class="btn" onclick="deleteVersion(${v.id})" style="padding:5px 10px;font-size:0.73rem;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function updateHistoryBadge() {
+        const count = getHistory().length;
+        document.getElementById('historyCount').textContent = count;
+    }
+
+    function toggleHistory() {
+        const panel = document.getElementById('historyPanel');
+        const overlay = document.getElementById('historyOverlay');
+        const isOpen = panel.classList.contains('open');
+
+        if (isOpen) {
+            panel.classList.remove('open');
+            overlay.classList.remove('show');
+        } else {
+            renderHistoryList();
+            panel.classList.add('open');
+            overlay.classList.add('show');
+        }
+    }
+
+    // ── Auto-save a cada 30 segundos ──────────────────────────────────────
+    let autoSaveInterval;
+    function startAutoSave() {
+        autoSaveInterval = setInterval(() => {
+            const versions = getHistory();
+            const last = versions[0];
+            const currentHtml = editors.html.value;
+            // Só salva se houve mudança
+            if (!last || last.html !== currentHtml || last.css !== editors.css.value || last.js !== editors.js.value) {
+                saveToHistory();
+                terminalLog('💾 Auto-save executado', 'output');
+            }
+        }, 30000); // 30 segundos
+    }
+    startAutoSave();
+
+    // ── Line numbers ──────────────────────────────────────────────────────
     function updateLineNumbers() {
         const editor = editors[currentTab];
         const count  = editor.value.split('\n').length;
         lineNumbers.textContent = Array.from({length: count}, (_, i) => i + 1).join('\n');
-        // sync scroll
         lineNumbers.scrollTop = editor.scrollTop;
     }
 
-    // ── Cursor position ─────────────────────────────────────────────────────
+    // ── Cursor ────────────────────────────────────────────────────────────
     function updateCursor(editor) {
         const text = editor.value.substring(0, editor.selectionStart);
         const lines = text.split('\n');
@@ -468,7 +837,7 @@
         document.getElementById('cursorCol').textContent  = lines[lines.length - 1].length + 1;
     }
 
-    // ── Tab key inserts spaces ───────────────────────────────────────────────
+    // ── Tab key ───────────────────────────────────────────────────────────
     function handleTabKey(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
@@ -481,22 +850,19 @@
         }
     }
 
-    // ── Switch tab ──────────────────────────────────────────────────────────
+    // ── Switch tab ────────────────────────────────────────────────────────
     function switchTab(tab, btn) {
         currentTab = tab;
-
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
-
         Object.values(editors).forEach(e => e.style.display = 'none');
         editors[tab].style.display = 'block';
         editors[tab].focus();
-
         updateLineNumbers();
         updateCharCount();
     }
 
-    // ── Run code ────────────────────────────────────────────────────────────
+    // ── Run code ──────────────────────────────────────────────────────────
     function runCode() {
         const html = editors.html.value;
         const css  = editors.css.value;
@@ -508,84 +874,95 @@
             doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`);
             doc.close();
 
-            document.getElementById('previewStatus').textContent = 'Executado ✓';
+            const statusEl = document.getElementById('previewStatus');
+            statusEl.textContent = '✓ Executado';
+            statusEl.className = 'success';
             updateCharCount();
-            showNotification('Código executado com sucesso!', 'success');
-            terminalLog('Código executado com sucesso.', 'success');
+            showToast('Código executado com sucesso!', 'success');
+            terminalLog('✅ Código executado com sucesso', 'success');
         } catch (err) {
-            document.getElementById('previewStatus').textContent = 'Erro!';
-            showNotification('Erro: ' + err.message, 'error');
-            terminalLog('Erro na execução: ' + err.message, 'error');
+            const statusEl = document.getElementById('previewStatus');
+            statusEl.textContent = '✕ Erro';
+            statusEl.className = 'error';
+            showToast('Erro: ' + err.message, 'error');
+            terminalLog('❌ Erro: ' + err.message, 'error');
         }
     }
 
-    // ── Clear ───────────────────────────────────────────────────────────────
+    // ── Clear ─────────────────────────────────────────────────────────────
     function clearAll() {
         Object.values(editors).forEach(e => e.value = '');
         const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
         doc.open(); doc.write(''); doc.close();
         document.getElementById('previewStatus').textContent = 'Pronto';
+        document.getElementById('previewStatus').className = '';
         updateLineNumbers();
         updateCharCount();
-        showNotification('Editores limpos.', 'success');
-        terminalLog('Editores limpos.', 'warning');
+        showToast('Editores limpos', 'warning');
+        terminalLog('🧹 Editores limpos', 'warning');
     }
 
-    // ── Load example ────────────────────────────────────────────────────────
+    // ── Load example ──────────────────────────────────────────────────────
     function loadExample() {
         editors.html.value =
-`<h1>Olá, Code Runner! 🚀</h1>
+`<h1>Olá, Code Runner Pro! 🚀</h1>
 <p>Este é um exemplo interativo.</p>
-<button onclick="mudarCor()">Mudar cor</button>
-<div id="caixa" style="width:100px;height:100px;background:#4a6cf7;margin-top:16px;border-radius:8px;transition:background .4s"></div>`;
+<button onclick="mudarCor()">🎨 Mudar cor</button>
+<div id="caixa"></div>`;
 
         editors.css.value =
 `body {
-  font-family: sans-serif;
-  padding: 24px;
-  background: #f0f4ff;
+  font-family: system-ui, sans-serif;
+  padding: 30px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
 }
-h1 { color: #4a6cf7; }
+h1 { color: #6c5ce7; font-size: 2rem; }
 button {
-  padding: 8px 18px;
-  background: #4a6cf7;
+  padding: 12px 24px;
+  background: #6c5ce7;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 1rem;
+  transition: transform .2s;
+}
+button:hover { transform: scale(1.05); }
+#caixa {
+  width: 120px; height: 120px;
+  background: #6c5ce7;
+  margin-top: 20px;
+  border-radius: 16px;
+  transition: all .4s ease;
 }`;
 
         editors.js.value =
 `function mudarCor() {
-  const cores = ['#f44336','#4caf50','#ff9800','#9c27b0','#4a6cf7'];
+  const cores = ['#ff7675','#00cec9','#fdcb6e','#a29bfe','#6c5ce7','#fd79a8'];
   const caixa = document.getElementById('caixa');
-  caixa.style.background = cores[Math.floor(Math.random() * cores.length)];
+  const cor = cores[Math.floor(Math.random() * cores.length)];
+  caixa.style.background = cor;
+  caixa.style.transform = 'rotate(' + (Math.random()*20-10) + 'deg) scale(' + (0.9+Math.random()*0.3) + ')';
 }`;
 
-        editors.py.value = '# Python roda no terminal abaixo (simulado)\nprint("Olá do Python!")';
+        editors.py.value = '# Python roda no terminal\nprint("Olá do Python! 🐍")\n';
 
-        // switch para HTML e executa
         const htmlBtn = document.querySelector('.tab');
         switchTab('html', htmlBtn);
         runCode();
-        showNotification('Exemplo carregado!', 'success');
+        showToast('Exemplo carregado!', 'success');
     }
 
-    // ── Open in new tab ─────────────────────────────────────────────────────
+    // ── Open in new tab ───────────────────────────────────────────────────
     function openInNewTab() {
-        const html = editors.html.value;
-        const css  = editors.css.value;
-        const js   = editors.js.value;
-
-        const content = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+        const content = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${editors.css.value}</style></head><body>${editors.html.value}<script>${editors.js.value}<\/script></body></html>`;
         const blob = new Blob([content], { type: 'text/html' });
-        const url  = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        showNotification('Aberto em nova aba!', 'success');
+        window.open(URL.createObjectURL(blob), '_blank');
+        showToast('Aberto em nova aba!', 'success');
     }
 
-    // ── Char count ──────────────────────────────────────────────────────────
+    // ── Char count ────────────────────────────────────────────────────────
     function updateCharCount() {
         document.getElementById('htmlLength').textContent = editors.html.value.length;
         document.getElementById('cssLength').textContent  = editors.css.value.length;
@@ -593,18 +970,18 @@ button {
         document.getElementById('pyLength').textContent   = editors.py.value.length;
     }
 
-    // ── Notification ────────────────────────────────────────────────────────
-    function showNotification(msg, type = 'success') {
-        const icon = document.getElementById('notificationIcon');
-        notification.className = 'notification ' + type;
+    // ── Toast ─────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const icon = document.getElementById('toastIcon');
+        toast.className = 'toast ' + type;
         icon.className = type === 'error' ? 'fas fa-times-circle' : 'fas fa-check-circle';
-        document.getElementById('notificationText').textContent = msg;
-        notification.classList.add('show');
-        clearTimeout(notifTimeout);
-        notifTimeout = setTimeout(() => notification.classList.remove('show'), 3000);
+        document.getElementById('toastText').textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
-    // ── Terminal log helper ──────────────────────────────────────────────────
+    // ── Terminal log ──────────────────────────────────────────────────────
     function terminalLog(msg, cls = 'output') {
         const line = document.createElement('div');
         line.className = 'terminal-line terminal-' + cls;
@@ -613,19 +990,22 @@ button {
         terminalOutput.scrollTop = terminalOutput.scrollHeight;
     }
 
-    // ── Terminal commands ────────────────────────────────────────────────────
+    // ── Terminal commands ─────────────────────────────────────────────────
     const COMMANDS = {
         help() {
             const cmds = [
-                'help          — lista os comandos',
-                'run           — executa o código (HTML/CSS/JS)',
-                'clear         — limpa o terminal',
-                'clearall      — limpa os editores',
-                'example       — carrega o exemplo',
-                'tab html|css|js|py — muda a aba',
-                'chars         — mostra contagem de caracteres',
-                'echo <texto>  — imprime texto',
-                'version       — versão do app',
+                'help           — lista comandos',
+                'run            — executa código',
+                'clear          — limpa terminal',
+                'clearall       — limpa editores',
+                'example        — carrega exemplo',
+                'save           — salva versão no histórico',
+                'history        — mostra histórico (painel)',
+                'load <id>      — carrega versão por ID',
+                'tab html|css|js|py — muda aba',
+                'chars          — contagem de caracteres',
+                'echo <texto>   — imprime texto',
+                'version        — versão do app',
             ];
             cmds.forEach(c => terminalLog(c, 'output'));
         },
@@ -636,13 +1016,23 @@ button {
         },
         clearall(){ clearAll(); },
         example() { loadExample(); },
+        save()    { saveToHistory(); },
+        history() {
+            toggleHistory();
+            terminalLog('📋 Painel de histórico aberto', 'output');
+        },
+        load(args) {
+            const id = parseInt(args[0]);
+            if (isNaN(id)) { terminalLog('Uso: load <id>', 'error'); return; }
+            loadVersion(id);
+        },
         chars()   {
             terminalLog(`HTML: ${editors.html.value.length} | CSS: ${editors.css.value.length} | JS: ${editors.js.value.length} | Python: ${editors.py.value.length}`, 'output');
         },
-        version() { terminalLog('Code Runner v1.0.0', 'success'); },
+        version() { terminalLog('Code Runner Pro v2.0.0', 'success'); },
         tab(args) {
             const t = args[0];
-            if (!editors[t]) { terminalLog(`Aba inválida: ${t}. Use html, css, js ou py.`, 'error'); return; }
+            if (!editors[t]) { terminalLog(`Aba inválida: ${t}`, 'error'); return; }
             const btn = [...document.querySelectorAll('.tab')].find(b => b.textContent.trim().toLowerCase().startsWith(t));
             if (btn) switchTab(t, btn);
             terminalLog(`Aba: ${t}`, 'success');
@@ -652,21 +1042,19 @@ button {
 
     terminalInput.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
-        const raw   = terminalInput.value.trim();
+        const raw = terminalInput.value.trim();
         terminalInput.value = '';
         if (!raw) return;
 
-        // echo command
         const cmdLine = document.createElement('div');
         cmdLine.className = 'terminal-line terminal-cmd';
-        cmdLine.innerHTML = `<span class="terminal-prompt">user@coderunner:~$</span> ${escapeHtml(raw)}`;
+        cmdLine.innerHTML = `<span class="terminal-prompt">coderunner:~$</span> ${escapeHtml(raw)}`;
         terminalOutput.appendChild(cmdLine);
 
         const parts = raw.split(/\s+/);
         const cmd   = parts[0].toLowerCase();
         const args  = parts.slice(1);
 
-        // Python simulation
         if (currentTab === 'py' && raw === 'run') {
             simulatePython(editors.py.value);
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
@@ -678,52 +1066,40 @@ button {
         } else {
             terminalLog(`Comando não encontrado: ${cmd}. Digite help.`, 'error');
         }
-
         terminalOutput.scrollTop = terminalOutput.scrollHeight;
     });
 
-    // ── Python simulation (basic) ────────────────────────────────────────────
+    // ── Python simulation ─────────────────────────────────────────────────
     function simulatePython(code) {
         const lines = code.split('\n');
         const output = [];
         const vars   = {};
-
         for (const raw of lines) {
             const line = raw.trim();
             if (!line || line.startsWith('#')) continue;
-
-            // print(...)
             const printMatch = line.match(/^print\((.+)\)$/);
             if (printMatch) {
                 try {
                     const inner = printMatch[1].trim();
-                    // string literal
                     const strMatch = inner.match(/^["'](.*)["']$/);
                     if (strMatch) { output.push(strMatch[1]); continue; }
-                    // f-string basic
                     const fMatch = inner.match(/^f["'](.*)["']$/);
                     if (fMatch) {
                         let s = fMatch[1].replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? v);
                         output.push(s); continue;
                     }
-                    // variable
                     if (vars[inner] !== undefined) { output.push(String(vars[inner])); continue; }
-                    // expression
                     output.push(String(eval(inner)));
-                } catch { output.push('[erro ao avaliar]'); }
+                } catch { output.push('[erro]'); }
                 continue;
             }
-
-            // var = value
             const assignMatch = line.match(/^(\w+)\s*=\s*(.+)$/);
             if (assignMatch) {
                 const [, name, val] = assignMatch;
                 try { vars[name] = eval(val.replace(/\b([a-zA-Z_]\w*)\b/g, v => vars[v] !== undefined ? vars[v] : v)); }
                 catch { vars[name] = val.replace(/^["']|["']$/g, ''); }
-                continue;
             }
         }
-
         if (output.length) {
             output.forEach(l => terminalLog(l, 'success'));
         } else {
@@ -731,12 +1107,12 @@ button {
         }
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────
     function escapeHtml(s) {
         return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // ── Wire up editors ──────────────────────────────────────────────────────
+    // ── Wire up editors ──────────────────────────────────────────────────
     Object.entries(editors).forEach(([key, el]) => {
         el.addEventListener('input', () => {
             if (key === currentTab) updateLineNumbers();
@@ -750,9 +1126,19 @@ button {
         el.addEventListener('click',   e => updateCursor(e.target));
     });
 
-    // Init
+    // ── Keyboard shortcuts ────────────────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 's') { e.preventDefault(); saveToHistory(); }
+            if (e.key === 'Enter') { e.preventDefault(); runCode(); }
+            if (e.key === 'h') { e.preventDefault(); toggleHistory(); }
+        }
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────
     updateLineNumbers();
     updateCharCount();
+    updateHistoryBadge();
 </script>
 </body>
 </html>
